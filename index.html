@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Cup 26 Arena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>WORLD CUP 26</h1>
+      <div class="subtitle">PREDICTION ARENA</div>
+      <div id="account-bar" class="account-bar"></div>
+    </header>
+
+    <nav id="tabs">
+      <button class="tab active" data-tab="arena">&#9917; Arena</button>
+      <button class="tab" data-tab="matches">&#128203; Matches</button>
+      <button class="tab" data-tab="standings">&#127942; Standings</button>
+      <button class="tab" data-tab="brackets">&#127914; Brackets</button>
+      <button class="tab" data-tab="achievements">&#11088; Achievements</button>
+      <button class="tab" data-tab="bank">&#128176; Bank</button>
+    </nav>
+
+    <main>
+      <!-- ARENA TAB -->
+      <section id="tab-arena" class="tab-content active">
+        <div class="arena-wrapper">
+          <canvas id="arena-canvas" width="480" height="270"></canvas>
+        </div>
+        <div class="arena-scoreboard">
+          <div class="arena-player" id="arena-p0"></div>
+          <div class="arena-player" id="arena-p1"></div>
+          <div class="arena-player" id="arena-p2"></div>
+          <div class="arena-player" id="arena-p3"></div>
+        </div>
+        <div class="arena-live">
+          <h3 class="arena-live-title">&#9876;&#65039; RIVALRIES &middot; UPCOMING MATCHES</h3>
+          <div id="arena-rivalries-list"></div>
+        </div>
+        <div class="arena-live">
+          <h3 class="arena-live-title">&#9889; LIVE &amp; RECENT &middot; &plusmn;12H</h3>
+          <div id="arena-live-matches"></div>
+        </div>
+      </section>
+
+      <!-- MATCHES TAB -->
+      <section id="tab-matches" class="tab-content">
+        <div class="matches-controls">
+          <select id="match-filter">
+            <option value="all">All Matches</option>
+            <option value="completed">Completed</option>
+            <option value="upcoming">Upcoming</option>
+          </select>
+          <select id="group-filter">
+            <option value="all">All Groups</option>
+          </select>
+          <button class="btn" id="import-btn" title="Import predictions from JSON">IMPORT JSON</button>
+          <input type="file" id="import-file" accept=".json" style="display:none">
+        </div>
+        <div id="matches-list"></div>
+        <!-- Prediction Modal -->
+        <div id="prediction-modal" class="modal hidden">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 id="modal-match-title"></h3>
+              <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div id="modal-body"></div>
+            <div class="modal-actions">
+              <button class="btn btn-save" id="modal-save">SAVE</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STANDINGS TAB -->
+      <section id="tab-standings" class="tab-content">
+        <div id="standings-table-wrap"></div>
+        <div class="chart-container">
+          <h3>POINTS OVER TIME</h3>
+          <canvas id="standings-chart" width="600" height="250"></canvas>
+        </div>
+      </section>
+
+      <!-- BRACKETS TAB -->
+      <section id="tab-brackets" class="tab-content">
+        <div class="bracket-controls">
+          <select id="bracket-view">
+            <option value="actual">Actual Bracket</option>
+          </select>
+          <button class="btn" id="bracket-import-btn" title="Import bracket predictions from JSON">IMPORT BRACKETS</button>
+          <input type="file" id="bracket-import-file" accept=".json" style="display:none">
+        </div>
+        <div id="bracket-score-wrap"></div>
+        <div id="bracket-board"></div>
+        <div class="bracket-note">
+          R32 teams are auto-filled from the group tables when group results are completed. Later actual knockout slots can be selected manually as the tournament progresses.
+        </div>
+      </section>
+
+      <!-- ACHIEVEMENTS TAB -->
+      <section id="tab-achievements" class="tab-content">
+        <div class="player-select-row">
+          <button class="player-btn active" data-player="all">ALL</button>
+        </div>
+        <div id="achievements-grid"></div>
+      </section>
+
+      <!-- BANK TAB -->
+      <section id="tab-bank" class="tab-content">
+        <div id="bank-table-wrap"></div>
+        <div id="bank-edit" class="hidden">
+          <h3 id="bank-edit-title"></h3>
+          <div class="bank-fields"></div>
+          <button class="btn btn-save" id="bank-save">SAVE</button>
+          <button class="btn" id="bank-cancel">CANCEL</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Player stats modal (opened from Arena cards / canvas characters) -->
+    <div id="player-modal" class="modal hidden">
+      <div class="modal-content player-modal-content">
+        <div class="modal-header">
+          <h3 id="player-modal-title"></h3>
+          <div class="modal-nav">
+            <button class="modal-nav-btn" id="player-modal-prev" title="Previous player (←)">&#9664;</button>
+            <button class="modal-nav-btn" id="player-modal-next" title="Next player (→)">&#9654;</button>
+            <button class="modal-close" id="player-modal-close" title="Close (Esc)">&times;</button>
+          </div>
+        </div>
+        <div id="player-modal-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login gate (only shown when online sync is configured and you're signed out) -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <h2>WORLD CUP 26</h2>
+      <div class="login-sub">PREDICTION ARENA</div>
+      <p class="login-text">Sign in with your email to view the league. We'll send you a one-click sign-in link &mdash; no password needed.</p>
+      <input type="email" id="login-email" placeholder="you@email.com" autocomplete="email">
+      <button class="btn btn-save" id="login-send">SEND SIGN-IN LINK</button>
+      <div id="login-status" class="login-status"></div>
+    </div>
+  </div>
+
+  <!-- Online sync (Supabase). Order matters: library, then config, then sync. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="sync.js"></script>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+{
+  "Kim": {
+    "r32": [
+      "Mexico",
+      "Canada",
+      "Brazil",
+      "Japan",
+      "Germany",
+      "South Korea",
+      "Netherlands",
+      "Morocco",
+      "Ecuador",
+      "Norway",
+      "France",
+      "Scotland",
+      "Czechia",
+      "Sweden",
+      "England",
+      "Ivory Coast",
+      "Belgium",
+      "Algeria",
+      "United States",
+      "Bosnia and Herzegovina",
+      "Spain",
+      "Austria",
+      "Colombia",
+      "Croatia",
+      "Switzerland",
+      "Egypt",
+      "Türkiye",
+      "Iran",
+      "Argentina",
+      "Uruguay",
+      "Portugal",
+      "Ghana"
+    ],
+    "r16": [
+      "Germany",
+      "France",
+      "Mexico",
+      "Netherlands",
+      "Brazil",
+      "Norway",
+      "Sweden",
+      "England",
+      "Spain",
+      "Croatia",
+      "Belgium",
+      "United States",
+      "Türkiye",
+      "Argentina",
+      "Switzerland",
+      "Portugal"
+    ],
+    "qf": [
+      "France",
+      "Netherlands",
+      "Spain",
+      "Belgium",
+      "Brazil",
+      "England",
+      "Argentina",
+      "Portugal"
+    ],
+    "sf": [
+      "France",
+      "Spain",
+      "Brazil",
+      "Argentina"
+    ],
+    "final": [
+      "Spain",
+      "Argentina"
+    ],
+    "champion": [
+      "Spain"
+    ],
+    "bronze": [
+      "France",
+      "Brazil"
+    ],
+    "bronzeWinner": "France"
+  },
+  "Sebastian": {
+    "r32": [
+      "South Korea",
+      "Switzerland",
+      "Brazil",
+      "Japan",
+      "Germany",
+      "Czechia",
+      "Netherlands",
+      "Morocco",
+      "Ecuador",
+      "Norway",
+      "France",
+      "Scotland",
+      "Mexico",
+      "Ivory Coast",
+      "England",
+      "Senegal",
+      "Belgium",
+      "Algeria",
+      "Türkiye",
+      "Bosnia and Herzegovina",
+      "Spain",
+      "Austria",
+      "Colombia",
+      "Croatia",
+      "Canada",
+      "Sweden",
+      "United States",
+      "Egypt",
+      "Argentina",
+      "Uruguay",
+      "Portugal",
+      "Ghana"
+    ],
+    "r16": [
+      "Germany",
+      "France",
+      "Switzerland",
+      "Netherlands",
+      "Brazil",
+      "Ecuador",
+      "Ivory Coast",
+      "England",
+      "Spain",
+      "Colombia",
+      "Belgium",
+      "Türkiye",
+      "United States",
+      "Argentina",
+      "Canada",
+      "Portugal"
+    ],
+    "qf": [
+      "France",
+      "Netherlands",
+      "Spain",
+      "Belgium",
+      "Brazil",
+      "England",
+      "Argentina",
+      "Portugal"
+    ],
+    "sf": [
+      "France",
+      "Spain",
+      "England",
+      "Portugal"
+    ],
+    "final": [
+      "Spain",
+      "Portugal"
+    ],
+    "champion": [
+      "Spain"
+    ],
+    "bronze": [
+      "France",
+      "England"
+    ],
+    "bronzeWinner": "France"
+  },
+  "Jonatan": {
+    "r32": [
+      "South Korea",
+      "Bosnia and Herzegovina",
+      "Brazil",
+      "Japan",
+      "Germany",
+      "Mexico",
+      "Netherlands",
+      "Morocco",
+      "Ecuador",
+      "Norway",
+      "France",
+      "Paraguay",
+      "Czechia",
+      "Scotland",
+      "England",
+      "Ivory Coast",
+      "Belgium",
+      "Senegal",
+      "United States",
+      "Canada",
+      "Spain",
+      "Austria",
+      "Colombia",
+      "Croatia",
+      "Switzerland",
+      "Algeria",
+      "Türkiye",
+      "Egypt",
+      "Argentina",
+      "Uruguay",
+      "Portugal",
+      "Ghana"
+    ],
+    "r16": [
+      "Germany",
+      "France",
+      "Bosnia and Herzegovina",
+      "Netherlands",
+      "Brazil",
+      "Norway",
+      "Scotland",
+      "England",
+      "Spain",
+      "Croatia",
+      "Belgium",
+      "United States",
+      "Türkiye",
+      "Argentina",
+      "Switzerland",
+      "Portugal"
+    ],
+    "qf": [
+      "France",
+      "Netherlands",
+      "Spain",
+      "Belgium",
+      "Brazil",
+      "England",
+      "Argentina",
+      "Portugal"
+    ],
+    "sf": [
+      "France",
+      "Spain",
+      "England",
+      "Portugal"
+    ],
+    "final": [
+      "Spain",
+      "Portugal"
+    ],
+    "champion": [
+      "Spain"
+    ],
+    "bronze": [
+      "France",
+      "England"
+    ],
+    "bronzeWinner": "France"
+  },
+  "Sander": {
+    "r32": [
+      "Mexico",
+      "Canada",
+      "Morocco",
+      "Japan",
+      "Germany",
+      "South Korea",
+      "Netherlands",
+      "Brazil",
+      "Ivory Coast",
+      "Senegal",
+      "France",
+      "Scotland",
+      "Czechia",
+      "Ecuador",
+      "England",
+      "Norway",
+      "Belgium",
+      "Algeria",
+      "Türkiye",
+      "Sweden",
+      "Spain",
+      "Austria",
+      "Colombia",
+      "Croatia",
+      "Switzerland",
+      "Iran",
+      "United States",
+      "Egypt",
+      "Argentina",
+      "Uruguay",
+      "Portugal",
+      "Australia"
+    ],
+    "r16": [
+      "Germany",
+      "France",
+      "Mexico",
+      "Brazil",
+      "Morocco",
+      "Ivory Coast",
+      "Czechia",
+      "England",
+      "Spain",
+      "Colombia",
+      "Belgium",
+      "Türkiye",
+      "Egypt",
+      "Argentina",
+      "Switzerland",
+      "Portugal"
+    ],
+    "qf": [
+      "France",
+      "Brazil",
+      "Spain",
+      "Belgium",
+      "Ivory Coast",
+      "England",
+      "Argentina",
+      "Portugal"
+    ],
+    "sf": [
+      "France",
+      "Spain",
+      "England",
+      "Portugal"
+    ],
+    "final": [
+      "France",
+      "Portugal"
+    ],
+    "champion": [
+      "Portugal"
+    ],
+    "bronze": [
+      "Spain",
+      "England"
+    ],
+    "bronzeWinner": "Spain"
+  }
+}

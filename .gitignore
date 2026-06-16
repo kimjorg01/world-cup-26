@@ -1,0 +1,13 @@
+# OS / editor cruft
+Thumbs.db
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Local Claude/preview scratch
+.claude/plans/
+.claude/settings.local.json
+
+# Node (not used yet, but in case)
+node_modules/
