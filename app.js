@@ -1106,24 +1106,112 @@ function renderArenaSideList(elId, matches, isRecent) {
   }
   const editable = canEdit();
   wrap.innerHTML = matches.map(m => {
-    const score = m.completed
-      ? `<span class="side-score">${m.homeScore}-${m.awayScore}</span>`
-      : `<span class="side-score pending">vs</span>`;
-    return `<div class="side-game${editable ? ' editable' : ''}" data-id="${m.id}"${editable ? ' title="Click to edit result / predictions"' : ''}>
+    const hs = m.homeScore ?? "", as = m.awayScore ?? "";
+    const hc = TEAMS[m.home]?.code || m.home, ac = TEAMS[m.away]?.code || m.away;
+    const homeTeam = `<span class="side-team">${flagImg(m.home, 18)} ${hc}</span>`;
+    const awayTeam = `<span class="side-team">${ac} ${flagImg(m.away, 18)}</span>`;
+
+    const body = editable
+      ? `<div class="side-game-teams">${homeTeam}<span class="side-vs">vs</span>${awayTeam}</div>
+        <div class="side-game-edit">
+          <div class="stepper side-stepper">
+            <button type="button" class="step-btn" data-side-id="${m.id}" data-side="home" data-dir="-1">-</button>
+            <input type="number" class="side-input" data-id="${m.id}" data-side="home" min="0" max="20" value="${hs}">
+            <button type="button" class="step-btn" data-side-id="${m.id}" data-side="home" data-dir="1">+</button>
+          </div>
+          <span class="side-edit-dash">-</span>
+          <div class="stepper side-stepper">
+            <button type="button" class="step-btn" data-side-id="${m.id}" data-side="away" data-dir="-1">-</button>
+            <input type="number" class="side-input" data-id="${m.id}" data-side="away" min="0" max="20" value="${as}">
+            <button type="button" class="step-btn" data-side-id="${m.id}" data-side="away" data-dir="1">+</button>
+          </div>
+          <button type="button" class="side-clear" data-id="${m.id}" title="Clear result">&#8635;</button>
+        </div>`
+      : `<div class="side-game-row">
+          ${homeTeam}
+          ${m.completed ? `<span class="side-score">${hs}-${as}</span>` : `<span class="side-score pending">vs</span>`}
+          ${awayTeam}
+        </div>`;
+
+    return `<div class="side-game${m.completed ? ' completed' : ''}" data-id="${m.id}">
       <div class="side-game-top"><span class="match-group-tag">GRP ${m.group}</span><span>#${m.id} &middot; ${formatDate(m.date)}</span></div>
-      <div class="side-game-row">
-        <span class="side-team">${flagImg(m.home, 16)} ${TEAMS[m.home]?.code || m.home}</span>
-        ${score}
-        <span class="side-team">${TEAMS[m.away]?.code || m.away} ${flagImg(m.away, 16)}</span>
-      </div>
+      ${body}
     </div>`;
   }).join("");
 
-  if (editable) {
-    wrap.querySelectorAll(".side-game").forEach(el => {
-      el.addEventListener("click", () => openPredictionModal(parseInt(el.dataset.id)));
+  if (!editable) return;
+
+  wrap.querySelectorAll(".step-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.dataset.sideId);
+      const input = wrap.querySelector(`.side-input[data-id="${id}"][data-side="${btn.dataset.side}"]`);
+      let v = parseInt(input.value);
+      if (isNaN(v)) v = 0;
+      v += parseInt(btn.dataset.dir);
+      if (v < 0) v = 0;
+      if (v > 20) v = 20;
+      input.value = v;
+      commitSideScore(id, wrap);
     });
+  });
+  wrap.querySelectorAll(".side-input").forEach(inp => {
+    inp.addEventListener("change", () => commitSideScore(parseInt(inp.dataset.id), wrap));
+  });
+  wrap.querySelectorAll(".side-clear").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.dataset.id);
+      wrap.querySelector(`.side-input[data-id="${id}"][data-side="home"]`).value = "";
+      wrap.querySelector(`.side-input[data-id="${id}"][data-side="away"]`).value = "";
+      commitSideScore(id, wrap);
+    });
+  });
+}
+
+// Apply (or clear) a match result, fire reactions/sounds, and refresh views —
+// but NOT the side lists themselves, so a score being typed isn't wiped mid-entry.
+function setMatchResult(matchId, homeScore, awayScore) {
+  const hv = (homeScore === "" || homeScore == null) ? null : parseInt(homeScore);
+  const av = (awayScore === "" || awayScore == null) ? null : parseInt(awayScore);
+  if (hv == null || av == null) {
+    delete STATE.matchResults[matchId];
+  } else {
+    STATE.matchResults[matchId] = { homeScore: hv, awayScore: av, completed: true };
   }
+  saveState();
+
+  const md = getMatchData(matchId);
+  if (md.completed) {
+    let anyPerfect = false, anyResult = false;
+    PLAYERS.forEach(p => {
+      const pred = STATE.predictions[matchId]?.[p];
+      if (!pred) return;
+      anyResult = true;
+      const pts = calcPoints(pred.home, pred.away, md.homeScore, md.awayScore);
+      if (pts === 4) { triggerReaction(p, "perfect"); anyPerfect = true; }
+      else if (pts === 1) triggerReaction(p, "correct");
+      else triggerReaction(p, "wrong");
+    });
+    if (anyPerfect) sfx.perfect();
+    else if (anyResult) sfx.correct();
+  }
+
+  renderArenaScoreCardsOnly();
+  renderArenaRivalries();
+  renderMatches();
+  renderBracketsIfVisible();
+  checkAchievements();
+}
+
+function commitSideScore(matchId, listEl) {
+  const hi = listEl.querySelector(`.side-input[data-id="${matchId}"][data-side="home"]`);
+  const ai = listEl.querySelector(`.side-input[data-id="${matchId}"][data-side="away"]`);
+  if (!hi || !ai) return;
+  // Only save once both sides are set (or both cleared) — avoids clobbering a
+  // half-typed score and avoids pushing incomplete results to other devices.
+  if ((hi.value === "") !== (ai.value === "")) return;
+  setMatchResult(matchId, hi.value, ai.value);
+  const game = hi.closest(".side-game");
+  if (game) game.classList.toggle("completed", getMatchData(matchId).completed);
 }
 
 // ============================================================
