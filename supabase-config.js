@@ -13,6 +13,6 @@
 //  only, no login) exactly like before — handy for development.
 // ============================================================
 window.SUPABASE_CONFIG = {
-  url: "",      // e.g. "https://abcdefghijklmno.supabase.co"
-  anonKey: "",  // the long "anon public" key
+  url: "https://sceaunxpuccwcdzohpza.supabase.co",      // e.g. "https://abcdefghijklmno.supabase.co"
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjZWF1bnhwdWNjd2Nkem9ocHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NzcyOTcsImV4cCI6MjA5NzI1MzI5N30.zhBDE_LHEu0H9fHT9fMsbzJt_Zvw6livfFhAt0AagVo",  // the long "anon public" key
 };
