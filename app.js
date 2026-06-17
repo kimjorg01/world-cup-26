@@ -964,7 +964,7 @@ function renderArenaScoreCardsOnly() {
 
 function renderArenaScoreboard() {
   renderArenaScoreCardsOnly();
-  renderArenaLiveMatches();
+  renderArenaSideMatches();
   renderArenaRivalries();
   renderArenaRecap();
 }
@@ -1082,129 +1082,47 @@ function getNearbyMatches(hours = 12) {
     .sort((a, b) => a.id - b.id);
 }
 
-function renderArenaLiveMatches() {
-  const wrap = document.getElementById("arena-live-matches");
-  if (!wrap) return;
-  const matches = getNearbyMatches(12).map(m => getMatchData(m.id));
+// The most recently played (completed) matches, newest first.
+function getRecentMatches(count = 4) {
+  return MATCHES
+    .map(m => getMatchData(m.id))
+    .filter(m => m.completed)
+    .sort((a, b) => b.id - a.id)
+    .slice(0, count);
+}
 
-  if (matches.length === 0) {
-    wrap.innerHTML = `<div class="arena-live-empty">No matches within 12 hours of now.</div>`;
+// Compact overview boxes flanking the arena: RECENT (played) and NEXT (upcoming).
+function renderArenaSideMatches() {
+  renderArenaSideList("arena-recent-list", getRecentMatches(4), true);
+  renderArenaSideList("arena-upcoming-list", getUpcomingMatches(4), false);
+}
+
+function renderArenaSideList(elId, matches, isRecent) {
+  const wrap = document.getElementById(elId);
+  if (!wrap) return;
+  if (!matches.length) {
+    wrap.innerHTML = `<div class="arena-side-empty">${isRecent ? 'No games played yet.' : 'No upcoming games.'}</div>`;
     return;
   }
-
   const editable = canEdit();
-  let html = "";
-  matches.forEach(m => {
-    const home = TEAMS[m.home], away = TEAMS[m.away];
-    const hs = m.homeScore ?? "";
-    const as = m.awayScore ?? "";
-    const scoreInner = editable
-      ? `<div class="stepper">
-              <button type="button" class="step-btn" data-live="${m.id}" data-side="home" data-dir="-1">-</button>
-              <input type="number" class="live-input" data-live="${m.id}" data-side="home" min="0" max="20" value="${hs}">
-              <button type="button" class="step-btn" data-live="${m.id}" data-side="home" data-dir="1">+</button>
-            </div>
-            <span class="live-dash">-</span>
-            <div class="stepper">
-              <button type="button" class="step-btn" data-live="${m.id}" data-side="away" data-dir="-1">-</button>
-              <input type="number" class="live-input" data-live="${m.id}" data-side="away" min="0" max="20" value="${as}">
-              <button type="button" class="step-btn" data-live="${m.id}" data-side="away" data-dir="1">+</button>
-            </div>
-            <button type="button" class="live-clear" data-live="${m.id}" title="Clear result">&#8635;</button>`
-      : `<span class="match-score${m.completed ? '' : ' pending'}">${m.completed ? `${hs} - ${as}` : 'vs'}</span>`;
-    html += `
-      <div class="live-card ${m.completed ? 'completed' : 'upcoming'}">
-        <div class="live-card-top">
-          <span class="match-group-tag">GROUP ${m.group}</span>
-          <span>#${m.id} &middot; ${formatDate(m.date)}</span>
-        </div>
-        <div class="live-card-row">
-          <span class="live-team">${flagImg(m.home, 22)} ${home?.code || m.home}</span>
-          <div class="live-score">${scoreInner}</div>
-          <span class="live-team">${flagImg(m.away, 22)} ${away?.code || m.away}</span>
-        </div>
-      </div>`;
-  });
-  wrap.innerHTML = html;
+  wrap.innerHTML = matches.map(m => {
+    const score = m.completed
+      ? `<span class="side-score">${m.homeScore}-${m.awayScore}</span>`
+      : `<span class="side-score pending">vs</span>`;
+    return `<div class="side-game${editable ? ' editable' : ''}" data-id="${m.id}"${editable ? ' title="Click to edit result / predictions"' : ''}>
+      <div class="side-game-top"><span class="match-group-tag">GRP ${m.group}</span><span>#${m.id} &middot; ${formatDate(m.date)}</span></div>
+      <div class="side-game-row">
+        <span class="side-team">${flagImg(m.home, 16)} ${TEAMS[m.home]?.code || m.home}</span>
+        ${score}
+        <span class="side-team">${TEAMS[m.away]?.code || m.away} ${flagImg(m.away, 16)}</span>
+      </div>
+    </div>`;
+  }).join("");
 
-  wrap.querySelectorAll(".step-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = parseInt(btn.dataset.live);
-      const input = wrap.querySelector(`.live-input[data-live="${id}"][data-side="${btn.dataset.side}"]`);
-      let v = parseInt(input.value);
-      if (isNaN(v)) v = 0;
-      v += parseInt(btn.dataset.dir);
-      if (v < 0) v = 0;
-      if (v > 20) v = 20;
-      input.value = v;
-      commitLiveScore(id);
+  if (editable) {
+    wrap.querySelectorAll(".side-game").forEach(el => {
+      el.addEventListener("click", () => openPredictionModal(parseInt(el.dataset.id)));
     });
-  });
-  wrap.querySelectorAll(".live-input").forEach(inp => {
-    inp.addEventListener("change", () => commitLiveScore(parseInt(inp.dataset.live)));
-  });
-  wrap.querySelectorAll(".live-clear").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = parseInt(btn.dataset.live);
-      wrap.querySelector(`.live-input[data-live="${id}"][data-side="home"]`).value = "";
-      wrap.querySelector(`.live-input[data-live="${id}"][data-side="away"]`).value = "";
-      commitLiveScore(id);
-    });
-  });
-}
-
-// Shared: apply a result for a match, fire reactions/sounds, and sync all views
-function applyMatchResult(matchId, homeScore, awayScore) {
-  if (homeScore === "" || homeScore == null || awayScore === "" || awayScore == null) {
-    delete STATE.matchResults[matchId];
-  } else {
-    STATE.matchResults[matchId] = {
-      homeScore: parseInt(homeScore),
-      awayScore: parseInt(awayScore),
-      completed: true,
-    };
-  }
-  saveState();
-
-  const md = getMatchData(matchId);
-  if (md.completed) {
-    let anyPerfect = false, anyResult = false;
-    PLAYERS.forEach(p => {
-      const pred = STATE.predictions[matchId]?.[p];
-      if (!pred) return;
-      anyResult = true;
-      const pts = calcPoints(pred.home, pred.away, md.homeScore, md.awayScore);
-      if (pts === 4) { triggerReaction(p, "perfect"); anyPerfect = true; }
-      else if (pts === 1) triggerReaction(p, "correct");
-      else triggerReaction(p, "wrong");
-    });
-    if (anyPerfect) sfx.perfect();
-    else if (anyResult) sfx.correct();
-  }
-
-  // Keep all views in sync without rebuilding the live score form mid-entry.
-  renderArenaScoreCardsOnly();
-  if (md.completed) {
-    renderArenaRivalries();
-    renderArenaRecap();
-  }
-  renderMatches();
-  renderBracketsIfVisible();
-  checkAchievements();
-}
-
-function commitLiveScore(matchId) {
-  const wrap = document.getElementById("arena-live-matches");
-  const hi = wrap.querySelector(`.live-input[data-live="${matchId}"][data-side="home"]`);
-  const ai = wrap.querySelector(`.live-input[data-live="${matchId}"][data-side="away"]`);
-  applyMatchResult(matchId, hi.value, ai.value);
-  // Update only this card's styling — do NOT rebuild the panel, which would
-  // wipe a score that's still being entered one side at a time.
-  const card = hi.closest(".live-card");
-  if (card) {
-    const done = getMatchData(matchId).completed;
-    card.classList.toggle("completed", done);
-    card.classList.toggle("upcoming", !done);
   }
 }
 
@@ -1728,6 +1646,7 @@ function getActualBracketSlots() {
     actual[round.key] = Array.isArray(saved) ? saved.slice(0, round.slots) : [];
     while (actual[round.key].length < round.slots) actual[round.key].push("");
   });
+  actual.bronzeWinner = normalizeTeamName(STATE.bracketActual.bronzeWinner || "");
   return applyBronzeFallback(actual);
 }
 
@@ -1741,6 +1660,7 @@ function getBracketSlotsForView(view) {
     slots[round.key] = arr.slice(0, round.slots);
     while (slots[round.key].length < round.slots) slots[round.key].push("");
   });
+  slots.bronzeWinner = normalizeTeamName(saved.bronzeWinner || "");
   return applyBronzeFallback(slots);
 }
 
@@ -1837,7 +1757,8 @@ function slotMini(view, roundKey, index, value, advances = false) {
   const round = BRACKET_ROUNDS.find(r => r.key === roundKey);
   const cls = view === "actual" ? "" : bracketStatusClass(view, roundKey, index);
   const adv = advances && value ? " advances" : "";
-  return `<div class="tree-team ${cls}${adv}">${teamBadge(value, 13)}${cls === "correct" ? `<span>+${round.points}</span>` : ""}${loneMark(view, roundKey, index, value)}</div>`;
+  // Wrap flag+code together so justify-content:space-between doesn't split them.
+  return `<div class="tree-team ${cls}${adv}"><span class="tt-badge">${teamBadge(value, 13)}</span>${cls === "correct" ? `<span class="tt-pts">+${round.points}</span>` : ""}${loneMark(view, roundKey, index, value)}</div>`;
 }
 
 // A team advances if it appears in the next round's set of predicted teams.
@@ -1871,6 +1792,7 @@ function renderRocketBracket(view, slotsByRound) {
   const final = slotsByRound.final || [];
   const champion = slotsByRound.champion || [];
   const bronze = slotsByRound.bronze || [];
+  const bronzeWinner = slotsByRound.bronzeWinner || "";
 
   return `<div class="rocket-bracket-wrap">
     <div class="rocket-title">ROCKET-STYLE KNOCKOUT TREE</div>
@@ -1893,8 +1815,10 @@ function renderRocketBracket(view, slotsByRound) {
         </div>
         <div class="bronze-box">
           <div class="tree-label">BRONZE</div>
-          ${slotMini(view, "bronze", 0, bronze[0] || "")}
-          ${slotMini(view, "bronze", 1, bronze[1] || "")}
+          ${slotMini(view, "bronze", 0, bronze[0] || "", championAdvances(bronze[0], bronzeWinner))}
+          ${slotMini(view, "bronze", 1, bronze[1] || "", championAdvances(bronze[1], bronzeWinner))}
+          ${bronzeWinner ? `<div class="tree-sub-label">3RD PLACE</div>
+          <div class="tree-team bronze-winner"><span class="tt-badge">${teamBadge(bronzeWinner, 13)}</span></div>` : ""}
         </div>
       </div>
       <div class="tree-side right-side">
@@ -2055,7 +1979,9 @@ function renderBrackets() {
 
   BRACKET_ROUNDS.forEach(round => {
     const nextKey = BRACKET_NEXT[round.key];
-    const nextSlots = nextKey ? (slotsByRound[nextKey] || []) : null;
+    let nextSlots = nextKey ? (slotsByRound[nextKey] || []) : null;
+    // Bronze has no "next round"; highlight the predicted 3rd-place winner instead.
+    if (round.key === "bronze" && slotsByRound.bronzeWinner) nextSlots = [slotsByRound.bronzeWinner];
     html += renderBracketRound(selectedBracketView, round, slotsByRound[round.key] || [], nextSlots);
   });
 
@@ -2108,6 +2034,10 @@ function normalizeBracketData(raw) {
       if (idx >= 0 && idx < round.slots) out[roundKey][idx] = normalizeTeamName(value);
     });
   }
+
+  // The predicted 3rd-place winner (not a numbered round slot, so kept separately).
+  const bw = raw?.bronzeWinner || raw?.thirdPlace || raw?.bronze_winner;
+  if (bw) out.bronzeWinner = normalizeTeamName(bw);
 
   return out;
 }
@@ -2521,11 +2451,32 @@ function setupAuthUI() {
   emailInput.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
 }
 
+// Per-device UI scale (stored locally, not part of the shared league state).
+function applyUiScale(scale) {
+  const app = document.getElementById("app");
+  if (app) app.style.zoom = scale;
+}
+
+function setupUiScale() {
+  const slider = document.getElementById("ui-scale");
+  if (!slider) return;
+  const saved = parseFloat(localStorage.getItem("wc26_ui_scale"));
+  const scale = (saved >= 0.7 && saved <= 1.3) ? saved : 1;
+  slider.value = scale;
+  applyUiScale(scale);
+  slider.addEventListener("input", () => {
+    const v = parseFloat(slider.value);
+    applyUiScale(v);
+    localStorage.setItem("wc26_ui_scale", String(v));
+  });
+}
+
 function init() {
   setupGroupFilter();
   setupBracketControls();
   setupPlayerModal();
   setupAuthUI();
+  setupUiScale();
   const copyBtn = document.getElementById("copy-ai-prompt-btn");
   if (copyBtn) copyBtn.addEventListener("click", copyAiPrompt);
 
