@@ -105,14 +105,94 @@ header h1 {
 }
 
 /* ===== ARENA ===== */
+.arena-stage {
+  display: grid;
+  grid-template-columns: minmax(150px, 210px) minmax(0, 1fr) minmax(150px, 210px);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.arena-side {
+  border: var(--pixel-border);
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 7px 6px;
+  overflow: hidden;
+}
+
+.arena-side-title {
+  font-size: 7px;
+  color: var(--accent);
+  text-align: center;
+  letter-spacing: 1px;
+  margin-bottom: 7px;
+}
+
+.arena-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.side-game {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 5px 6px;
+}
+
+.side-game.editable { cursor: pointer; }
+.side-game.editable:hover { border-color: var(--gold); }
+
+.side-game-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 5px;
+  color: var(--text-dim);
+  margin-bottom: 5px;
+}
+
+.side-game-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 6px;
+}
+
+.side-team {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.side-score { color: var(--gold); font-size: 9px; }
+.side-score.pending { color: var(--text-dim); font-size: 7px; }
+
+.arena-side-empty {
+  color: var(--text-dim);
+  font-size: 6px;
+  text-align: center;
+  padding: 14px 4px;
+  line-height: 1.8;
+}
+
 .arena-wrapper {
   border: var(--pixel-border);
   border-color: var(--gold);
   overflow: hidden;
   background: #000;
   image-rendering: pixelated;
-  max-width: 960px;
-  margin: 0 auto;
+}
+
+@media (max-width: 840px) {
+  .arena-stage { grid-template-columns: 1fr; }
+  .arena-side { max-height: 180px; }
 }
 
 #arena-canvas {
@@ -1663,6 +1743,32 @@ header h1 {
   padding: 2px;
 }
 
+/* Keep flag + code together as one unit (so they don't get split to edges) */
+.tt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tt-pts { flex: 0 0 auto; color: var(--green); }
+
+/* Predicted 3rd-place winner shown under the bronze pair */
+.tree-sub-label {
+  font-size: 5px;
+  color: var(--text-dim);
+  text-align: center;
+  margin: 5px 0 2px;
+  letter-spacing: 1px;
+}
+
+.bronze-winner {
+  justify-content: center;
+  border: 1px solid var(--gold);
+  background: rgba(255, 215, 0, 0.12);
+}
+
 .tree-team:last-child {
   border-bottom: 0;
 }
@@ -1762,6 +1868,24 @@ header { position: relative; }
 }
 
 .account-email { color: var(--text-dim); }
+
+/* UI scale slider (top-left of header) */
+.ui-scale-control {
+  position: absolute;
+  top: 8px;
+  left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 6px;
+  color: var(--text-dim);
+}
+
+.ui-scale-control input[type="range"] {
+  width: 84px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
 
 .account-role {
   padding: 2px 5px;

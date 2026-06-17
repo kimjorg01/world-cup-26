@@ -82,8 +82,14 @@ Dashboard → **Authentication → Providers → Email**:
 Dashboard → **Authentication → URL Configuration**:
 - **Site URL:** your live URL (e.g. `https://YOURNAME.github.io/worldcup-app/`).
 - **Redirect URLs:** add both:
-  - `http://localhost:8765` (and `http://localhost:8765/index.html`) for local testing
-  - your GitHub Pages URL (and `.../index.html`)
+  - `http://localhost:8765/**` for local testing
+  - `https://YOURNAME.github.io/**` for the live site
+
+> ⚠️ **Paste the bare URL only** — no surrounding backticks (`` ` ``), quotes, or
+> trailing spaces. If you copy from this file, drop the backticks. A value like
+> `` `http://localhost:8765` `` will make the magic link fail with
+> *"No API key found in request"* and an address containing `%60` (an encoded
+> backtick). Using the `/**` wildcard avoids most redirect-matching mistakes.
 
 ## 5. Paste your keys into the app
 
