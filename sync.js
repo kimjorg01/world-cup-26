@@ -12,7 +12,19 @@
 (function () {
   const cfg = window.SUPABASE_CONFIG || {};
   const hasLib = !!(window.supabase && window.supabase.createClient);
-  const enabled = !!(cfg.url && cfg.anonKey && hasLib);
+
+  // Local development bypass: when served from localhost, run in pure local
+  // (localStorage) mode with no login gate, so you can test the UI without the
+  // magic link (which redirects to the deployed site). Force online testing
+  // locally by adding ?online=1 to the URL.
+  const host = location.hostname;
+  const isLocalhost = host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host === "";
+  const forceOnline = /[?&]online=1\b/.test(location.search);
+
+  const enabled = !!(cfg.url && cfg.anonKey && hasLib) && (!isLocalhost || forceOnline);
+  if (isLocalhost && !forceOnline && cfg.url) {
+    console.info("[WCSync] localhost detected — running in local mode (no login). Add ?online=1 to test the live sync flow.");
+  }
 
   const STATE_ROW_ID = 1;
 
@@ -31,7 +43,7 @@
         detectSessionInUrl: true,
       },
     });
-  } else if (cfg.url || cfg.anonKey) {
+  } else if ((cfg.url || cfg.anonKey) && !hasLib && !isLocalhost) {
     console.warn("[WCSync] Supabase config present but the supabase-js library failed to load; running local-only.");
   }
 
